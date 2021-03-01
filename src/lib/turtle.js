@@ -572,8 +572,8 @@ function generateTurtleModule(_target) {
             this._size       = 1;
             this._filling    = false;
             this._undoBuffer = [];
-            this._speed      = 3;
-            this._computed_speed = 5;
+            this._speed      = ((Sk.TurtleGraphics.speed) !== undefined ? Sk.TurtleGraphics.speed : 3 );
+            this._computed_speed = Math.max(0, this._speed * 2 - 1);
             this._colorMode  = 1.0;
             this._state      = undefined;
 
@@ -883,6 +883,21 @@ function generateTurtleModule(_target) {
         proto.$fillcolor.co_varnames = ["r", "g", "b", "a"];
         proto.$fillcolor.minArgs = 0;
         proto.$fillcolor.returnType = Types.COLOR;
+
+
+        proto.$setup = function(width, height, startX, startY) {
+            return this._screen.$set(width, height, startX, startY)
+        }
+        proto.$setup.minArgs     = 0;
+        proto.$setup.co_varnames = ["width", "height", "startx", "starty"];
+
+
+        proto.$bgcolor = function(color, g, b, a) {
+            return this._screen.$bgcolor(color, g, b, a)
+        };
+        proto.$bgcolor.minArgs = 0;
+        proto.$bgcolor.co_varnames = ["color", "g", "b", "a"];
+        proto.$bgcolor.returnType = Types.COLOR;
 
         proto.$color = function(color, fill, b, a) {
             if (color !== undefined) {
@@ -1286,6 +1301,15 @@ function generateTurtleModule(_target) {
                 parseInt(startY) :
                 0;
 
+            if (Sk.TurtleGraphics.onsetup) {
+                try {
+                    Sk.TurtleGraphics.onsetup(width, height, startX, startY)
+                }catch (e) {
+                    console.error('TurtleGraphics.onsetup error:', e)
+                }
+            }
+
+
             if (this._mode === "world") {
                 return this._setworldcoordinates(this.llx, this.lly, this.urx, this.ury);
             }
@@ -1532,7 +1556,7 @@ function generateTurtleModule(_target) {
 
             getTarget().addEventListener("keyup", this._keyUpListener);
         };
-        
+
         proto.$title = function(title){
             // output in the console
             // console.log(title);
@@ -2254,7 +2278,7 @@ function generateTurtleModule(_target) {
             }
         };
 
-        wrapperFn.co_name = new Sk.builtin.str(displayName); 
+        wrapperFn.co_name = new Sk.builtin.str(displayName);
         wrapperFn.co_varnames = co_varnames.slice();
         wrapperFn.$defaults = [];
 
@@ -2319,7 +2343,7 @@ function generateTurtleModule(_target) {
     addModuleMethod(Screen, _module, "$update", getScreen);
     addModuleMethod(Screen, _module, "$delay", getScreen);
     addModuleMethod(Screen, _module, "$window_width", getScreen);
-    addModuleMethod(Screen, _module, "$window_height", getScreen);    
+    addModuleMethod(Screen, _module, "$window_height", getScreen);
     addModuleMethod(Screen, _module, "$title", getScreen);
 
     _module.Turtle = Sk.misceval.buildClass(_module, TurtleWrapper, "Turtle", []);
