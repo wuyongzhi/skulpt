@@ -886,7 +886,7 @@ function generateTurtleModule(_target) {
 
 
         proto.$setup = function(width, height, startX, startY) {
-            return this._screen.$set(width, height, startX, startY)
+            return this._screen.$setup(width, height, startX, startY)
         }
         proto.$setup.minArgs     = 0;
         proto.$setup.co_varnames = ["width", "height", "startx", "starty"];
@@ -1070,12 +1070,14 @@ function generateTurtleModule(_target) {
         proto.$shape.co_varnames = ["name"];
         //colormode supported
         proto.$colormode = function(cmode){
+
             if(cmode !== undefined){
                 if(cmode === 255) {
                     this._colorMode = 255;
                 } else {
                     this._colorMode = 1.0;
                 }
+                this._screen._colorMode = this._colorMode
                 return this.addUpdate(undefined, this._shown, {colorMode : this._colorMode});
             }
 
@@ -1303,7 +1305,7 @@ function generateTurtleModule(_target) {
 
             if (Sk.TurtleGraphics.onsetup) {
                 try {
-                    Sk.TurtleGraphics.onsetup(width, height, startX, startY)
+                    Sk.TurtleGraphics.onsetup(this._width, this._height, this._xOffset, this._yOffset)
                 }catch (e) {
                     console.error('TurtleGraphics.onsetup error:', e)
                 }
